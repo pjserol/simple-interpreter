@@ -1,10 +1,9 @@
 package lexer
 
 import (
+	"pjserol/simple-interpreter/helper"
 	"pjserol/simple-interpreter/token"
 )
-
-// TODO: what's a rune (byte / unicode / char)
 
 type Lexer struct {
 	input        string
@@ -31,8 +30,36 @@ func (l *Lexer) readChar() {
 	l.readPosition++
 }
 
+func (l *Lexer) readIdentifier() string {
+	position := l.position
+
+	for helper.IsLetter(l.ch) {
+		l.readChar()
+	}
+
+	return l.input[position:l.position]
+}
+
+func (l *Lexer) readNumber() string {
+	position := l.position
+
+	for helper.IsDigit(l.ch) {
+		l.readChar()
+	}
+
+	return l.input[position:l.position]
+}
+
+func (l *Lexer) skipWhiteSpace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		l.readChar()
+	}
+}
+
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
+
+	l.skipWhiteSpace()
 
 	switch l.ch {
 	case '=':
@@ -54,6 +81,20 @@ func (l *Lexer) NextToken() token.Token {
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
+	default:
+		if helper.IsLetter(l.ch) {
+			tok.Literal = l.readIdentifier()
+			tok.Type = token.LookupIdent(tok.Literal)
+
+			return tok
+		} else if helper.IsDigit(l.ch) {
+			tok.Literal = l.readNumber()
+			tok.Type = token.INT
+
+			return tok
+		} else {
+			tok = newToken(token.ILLEGAL, l.ch)
+		}
 	}
 
 	l.readChar()
