@@ -47,10 +47,10 @@ func (ls *LetStatement) TokenLiteral() string {
 }
 
 type Identifier struct {
-	token token.Token // the token.IDENT token
+	Token token.Token // the token.IDENT token
 	Value string
 }
 
 func (i *Identifier) TokenLiteral() string {
-	return i.token.Literal
+	return i.Token.Literal
 }
